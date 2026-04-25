@@ -5,6 +5,8 @@ import statsmodels.formula.api as smf
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+#Running this python code shows our full simulation (green bars on plot)
+
 #Filepath for dataset
 df = pd.read_csv("/Users/jackgeraghty/EE24Python/merged.csv")
 
