@@ -1,0 +1,91 @@
+# Reproduction Instructions: NYC Traffic Collision — Negative Binomial Model
+# Jack Geraghty and AJ Romeo
+
+## Overview
+
+This document describes how to reproduce the full pipeline from raw data to fitted
+Negative Binomial regression model and simulated output distribution.
+
+---
+
+### Files you need
+
+| `collisions.csv` | downloaded from NYC Open Data |
+
+---
+
+## Step 1 — Download the collision data from NYC Open Data
+
+The collision dataset is the **NYPD Motor Vehicle Collisions — Crashes** dataset,
+published by the NYC Police Department on NYC Open Data.
+
+1. Go to: https://data.cityofnewyork.us/Public-Safety/Motor-Vehicle-Collisions-Crashes/h9gi-nx95
+2. Click **Export → CSV**
+3. Save the file as `collisions.csv` in your working directory
+
+---
+
+## Step 2 — Fetch hourly weather (`fetch_weather.py`)
+
+```bash
+python fetch_weather.py
+```
+
+**Output:** `weather.csv` with columns:
+`DATETIME`, `TEMP`, `PRECIPITATION`, `WEATHER CODE`, `WIND SPEED`,
+`WEATHER DESCRIPTION`, `PRECIPITATION TYPE`, `DATE`, `HOUR`
+
+---
+
+## Step 3 — Merge (`merge.py`)
+
+```bash
+python merge.py
+```
+
+**Output:** `merged.csv` — one row per `(DATE, HOUR)`, approximately 119,000+ rows
+depending on the date range of your collision download.
+
+---
+
+## Step 4 — Fit the model and simulate (`model.py`)
+
+```bash
+python model.py
+```
+
+After fitting, the script:
+
+1. Prints the full `model.summary()` table
+2. Prints a `results` table with raw coefficients
+3. Computes `PREDICTED_COUNT`
+4. Extracts the dispersion parameter `alpha` from `model.params['alpha']`
+5. Converts to NB parameterization: `n = 1/alpha`, `p = 1/(1 + alpha * μ̂)`
+6. Draws one simulated count per row from `NegativeBinomial(n, p)`
+7. Plots a density histogram comparing actual counts, predicted means, and
+   simulated counts; saves to `collision_histogram.png`
+
+---
+
+## File layout
+
+```
+project/
+├── collisions.csv  
+├── fetch_weather.py
+├── weather.csv     
+├── merge.py       
+├── merged.csv    
+├── model.py     
+└── collision_histogram.png 
+```
+
+The hardcoded path in `model.py`
+(`/Users/jackgeraghty/EE24Python/merged.csv`) should be updated to a relative
+path (`merged.csv`) if running on a different machine:
+
+```python
+# model.py line 7 — change to:
+df = pd.read_csv("merged.csv")
+```
+
